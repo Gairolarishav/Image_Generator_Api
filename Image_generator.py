@@ -2,13 +2,11 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 import openai
-import requests
-from PIL import Image
 from pydantic import BaseModel
 from io import BytesIO
 
 app = FastAPI()
-openai.api_key = "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"
+openai.api_key = "sk-fpCxHLrOVUbBkNQJU2cUT3BlbkFJT2FIiJIb5cBmKN7aM2y"
 
 # Configure CORS
 app.add_middleware(
@@ -38,14 +36,6 @@ async def Image_Generator(input_data: TextInput):
     for i, image_data in enumerate(response.data):
       image_url = image_data.b64_json
       print(image_url)
-      # # Decode the base64 string
-      # image_data = base64.b64decode(image_url)
-
-      # # Open the image using PIL
-      # image = Image.open(BytesIO(image_data))
-
-      # # Save the image to a file
-      # image.save("output.png") 
       images.append(image_url)
     return images
 
