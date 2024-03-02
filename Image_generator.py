@@ -38,6 +38,3 @@ async def Image_Generator(input_data: TextInput):
       print(image_url)
       images.append(image_url)
     return images
-
-if __name__ == '__main__':
-   uvicorn.run('Image_generator:app',host='localhost',port=4000)
