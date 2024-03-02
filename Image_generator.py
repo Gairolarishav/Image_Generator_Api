@@ -2,11 +2,12 @@ from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 import openai
+import os
 from pydantic import BaseModel
 from io import BytesIO
 
 app = FastAPI()
-openai.api_key = "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"
+openai.api_key = os.environ.get('api_key')
 
 # Configure CORS
 app.add_middleware(
