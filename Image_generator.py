@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from io import BytesIO
 
 app = FastAPI()
-openai.api_key = "sk-fpCxHLrOVUbBkNQJU2cUT3BlbkFJT2FIiJIb5cBmKN7aM2y"
+openai.api_key = "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"
 
 # Configure CORS
 app.add_middleware(
