@@ -52,7 +52,6 @@ async def Image_Generator(input_data: ImageInput):
 
 class ContentInput(BaseModel):
     text: str
-    token: int
 
 @app.post('/content_generator')
 async def Content_Generator(input_data: ContentInput):
@@ -74,7 +73,6 @@ async def Content_Generator(input_data: ContentInput):
           "temperature": 1.0,
           'top_p': 1.0,
           'n': 1,
-          'max_tokens' : input_data.token,
           'stream': False,
           "presence_penalty": 0,
           "frequency_penalty": 0,
