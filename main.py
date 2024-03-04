@@ -1,14 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,HTTPException
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 import openai
 import os
 from pydantic import BaseModel
-from io import BytesIO
 import requests
 
 app = FastAPI()
-openai.api_key = os.environ.get("api_key")
+openai.api_key = os.environ.get('api_key')
 
 # Configure CORS
 app.add_middleware(
@@ -26,20 +25,30 @@ class ImageInput(BaseModel):
 
 @app.post('/image_generator')
 async def Image_Generator(input_data: ImageInput):
-    images = []
-    response = openai.images.generate(
-      model="dall-e-2",
-      prompt= f"Generate a real image of : {input_data.text}",
-      n = input_data.count,
-      size=input_data.size,
-      quality="standard",
-      response_format = 'b64_json'
-    )
-    for i, image_data in enumerate(response.data):
-      image_url = image_data.b64_json
-      print(image_url)
-      images.append(image_url)
-    return images
+    if input_data.text:
+        images = []
+        response = openai.images.generate(
+            model="dall-e-2",
+            prompt=f"Generate a real image of : {input_data.text}",
+            n=input_data.count,
+            size=input_data.size,
+            quality="standard",
+            response_format='b64_json'
+        )
+        # print(response)
+        try:
+            for i, image_data in enumerate(response.data):
+                image_url = image_data.b64_json
+                images.append(image_url)
+            return images
+        except openai.AuthenticationError as e:
+            raise HTTPException(status_code=401, detail="Incorrect API key")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="An error occurred while generating images")
+    else:
+        return "Please Enter something"
+    
+
 
 class ContentInput(BaseModel):
     text: str
@@ -73,9 +82,12 @@ async def Content_Generator(input_data: ContentInput):
         'Authorization': f"Bearer {openai.api_key}"
         }
         response = requests.post(URL, headers=headers, json=payload)
+      else:
+         return "Please Enter something"
 
       if response.status_code == 200:
         reply = response.json()['choices'][0]['message']['content']
+        reply = reply.replace('\n','<br>')
         messages.append({"role": "assistant", "content": reply})
         return reply
       else:
