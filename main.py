@@ -28,8 +28,8 @@ def Image_Generator(input_data: ImageInput):
     if input_data.text:
         images = []
         response = openai.images.generate(
-            model="dall-e-2",
-            prompt=f"Generate a real image of : {input_data.text}",
+            model="dall-e-3",
+            prompt=input_data.text,
             n=input_data.count,
             size=input_data.size,
             quality="standard",
