@@ -24,7 +24,7 @@ class ImageInput(BaseModel):
     size: str
 
 @app.post('/image_generator')
-async def Image_Generator(input_data: ImageInput):
+def Image_Generator(input_data: ImageInput):
     if input_data.text:
         images = []
         response = openai.images.generate(
@@ -54,7 +54,7 @@ class ContentInput(BaseModel):
     text: str
 
 @app.post('/content_generator')
-async def Content_Generator(input_data: ContentInput):
+def Content_Generator(input_data: ContentInput):
     URL = "https://api.openai.com/v1/chat/completions"
 
     messages = [
