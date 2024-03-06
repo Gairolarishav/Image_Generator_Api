@@ -9,7 +9,7 @@ import base64
 from BingImageCreator import ImageGen
 
 app = FastAPI()
-openai.api_key = "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"
+openai.api_key = os.get.environ(api_key)
 
 # Configure CORS
 app.add_middleware(
