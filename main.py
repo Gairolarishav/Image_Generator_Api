@@ -33,7 +33,7 @@ def Image_Generator(input_data: ImageInput):
           image_gen = ImageGen(auth_cookie='1Vd9x_vBWsb_L3wJtLXMeKVWOKLCiIG-lPzivgKrqP24RpEfPy4JOoFRFWWTBEHkVA0JOxfWe6GiOeXnYhDRggtZokuRhF7BokBXzt6YMwzeTZS72VINEBgAbOCdLpDaLVIMNxzKVl_D3rLNzeeYYxQBp9itDoK93X8q1xMhxtLr0EwMPlXw2khy-i4FRCK1ZH-ZKohtC2vgYGkGIjKDAIw',auth_cookie_SRCHHPGUSR='1Vd9x_vBWsb_L3wJtLXMeKVWOKLCiIG-lPzivgKrqP24RpEfPy4JOoFRFWWTBEHkVA0JOxfWe6GiOeXnYhDRggtZokuRhF7BokBXzt6YMwzeTZS72VINEBgAbOCdLpDaLVIMNxzKVl_D3rLNzeeYYxQBp9itDoK93X8q1xMhxtLr0EwMPlXw2khy-i4FRCK1ZH-ZKohtC2vgYGkGIjKDAIw')
 
           # Provide a prompt (your text description)
-          prompt = f'create and image of {input_data.text}'
+          prompt = input_data.text
 
           # Generate an image based on the prompt
           image_url = image_gen.get_images(prompt)
