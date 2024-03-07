@@ -37,7 +37,6 @@ def Image_Generator(input_data: ImageInput):
 
           # Generate an image based on the prompt
           image_url = image_gen.get_images(prompt)
-          print(imaage_url)
           for i in image_url:
             response = requests.get(i)
             if response.status_code == 200:
