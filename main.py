@@ -22,69 +22,45 @@ app.add_middleware(
 
 class ImageInput(BaseModel):
     text: str
-    # count : int
-    # size: str
 
 @app.post('/image_generator')
-def Image_Generator(input_data: ImageInput):
-    try :    
-       if input_data.text:
-          images= [ ]
-          image_gen = ImageGen(auth_cookie='1Vd9x_vBWsb_L3wJtLXMeKVWOKLCiIG-lPzivgKrqP24RpEfPy4JOoFRFWWTBEHkVA0JOxfWe6GiOeXnYhDRggtZokuRhF7BokBXzt6YMwzeTZS72VINEBgAbOCdLpDaLVIMNxzKVl_D3rLNzeeYYxQBp9itDoK93X8q1xMhxtLr0EwMPlXw2khy-i4FRCK1ZH-ZKohtC2vgYGkGIjKDAIw',auth_cookie_SRCHHPGUSR='1Vd9x_vBWsb_L3wJtLXMeKVWOKLCiIG-lPzivgKrqP24RpEfPy4JOoFRFWWTBEHkVA0JOxfWe6GiOeXnYhDRggtZokuRhF7BokBXzt6YMwzeTZS72VINEBgAbOCdLpDaLVIMNxzKVl_D3rLNzeeYYxQBp9itDoK93X8q1xMhxtLr0EwMPlXw2khy-i4FRCK1ZH-ZKohtC2vgYGkGIjKDAIw')
+def Image_Generator(input_data: ImageInput):   
+    if input_data.text:
+        images= [ ]
+        try: 
+           image_gen = ImageGen(auth_cookie='1Vd9x_vBWsb_L3wJtLXMeKVWOKLCiIG-lPzivgKrqP24RpEfPy4JOoFRFWWTBEHkVA0JOxfWe6GiOeXnYhDRggtZokuRhF7BokBXzt6YMwzeTZS72VINEBgAbOCdLpDaLVIMNxzKVl_D3rLNzeeYYxQBp9itDoK93X8q1xMhxtLr0EwMPlXw2khy-i4FRCK1ZH-ZKohtC2vgYGkGIjKDAIw',auth_cookie_SRCHHPGUSR='1Vd9x_vBWsb_L3wJtLXMeKVWOKLCiIG-lPzivgKrqP24RpEfPy4JOoFRFWWTBEHkVA0JOxfWe6GiOeXnYhDRggtZokuRhF7BokBXzt6YMwzeTZS72VINEBgAbOCdLpDaLVIMNxzKVl_D3rLNzeeYYxQBp9itDoK93X8q1xMhxtLr0EwMPlXw2khy-i4FRCK1ZH-ZKohtC2vgYGkGIjKDAIw')
 
-          # Provide a prompt (your text description)
-          prompt = input_data.text
+           # Provide a prompt (your text description)
+           prompt = input_data.text
 
-          # Generate an image based on the prompt
-          image_url = image_gen.get_images(prompt)
-          for i in image_url:
-            response = requests.get(i)
-            if response.status_code == 200:
-                image_bytes = response.content
-                base64_bytes = base64.b64encode(image_bytes)
-                base64_string = base64_bytes.decode('utf-8')
-                print(base64_string)
-                if base64_string.startswith('/'):
-                   images.append(base64_string)
-          return images
-       else:
-         return "Please Enter something"
-    except Exception as e:
-        # print(e.http_status)
-        return (e)
+           # Generate an image based on the prompt
+           image_url = image_gen.get_images(prompt)
+           # print(image_url
+           for i in image_url:
+                 response = requests.get(i)    
+                 if response.status_code != 200:
+                     return ("Failed to fetch image. Please try again later.")     
+                 else: 
+                     image_bytes = response.content
+                     base64_bytes = base64.b64encode(image_bytes)
+                     base64_string = base64_bytes.decode('utf-8')
+                     print(base64_string)
+                     if base64_string.startswith('/'):
+                         images.append(base64_string)
+             # Return the list of images
+           return images
+        except Exception as e:
+           # Check if the exception message matches the one from BingImageCreator.py
+           if str(e) == "Your prompt has been blocked by Bing. Try to change any bad words and try again.":
+               raise HTTPException(status_code=403, detail="blocked the prompt. Please revise it and try again.")
+           else:
+               raise HTTPException(status_code=500, detail="Internal Server Error")
+    else:
+      return "Please Enter something"
 
 # @app.post('/save_image')
 # def save_image():
 # save_images(links: list, output_dir: str, file_name: str = None) -> None
-
-
-
-# def Image_Generator(input_data: ImageInput):
-#     try :    
-#        if input_data.text:
-#            images = []
-#            response = openai.images.generate(
-#            model="dall-e-2",
-#            prompt= input_data.text,
-#            size= input_data.size,
-#            quality="standard",
-#            response_format = "b64_json",
-#            n=input_data.count,
-#            )
-#            print(response)
-
-#            for i, image_data in enumerate(response.data):
-#                    image_url = image_data.b64_json
-#                    images.append(image_url)
-#                    print(images)
-#            return images
-#        else:
-#          return "Please Enter something"
-#     except openai.OpenAIError as e:
-#         # print(e.http_status)
-#         return (e.code)
-    
-
 
 class ContentInput(BaseModel):
     text: str
