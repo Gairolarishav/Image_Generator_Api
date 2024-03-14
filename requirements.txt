@@ -21,3 +21,4 @@ requests
 BingImageCreator
 clarifai_grpc
 Opencv-python
+pytesseract
