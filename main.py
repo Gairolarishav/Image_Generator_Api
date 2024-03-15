@@ -40,7 +40,7 @@ def Image_Generator(input_data: ImageInput):
     inference_params = dict(quality="standard" , size= "1024x1024")
     # Using the model Dall-e-3 to generate image
     # Passing the prompt and inference parameters
-    for i in range(3):
+    for i in range(2):
         model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(input_data.text.encode(), input_type="text",inference_params = inference_params)
         # Storing the output
         output = model_prediction.outputs[0].data.image.base64
