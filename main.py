@@ -6,16 +6,15 @@ import os
 from pydantic import BaseModel
 import requests
 import base64
-from BingImageCreator import ImageGen
 import cv2
 import numpy as np
 import pytesseract
-from clarifai_grpc.channel.clarifai_channel import ClarifaiChannel
-from clarifai_grpc.grpc.api import resources_pb2, service_pb2, service_pb2_grpc
-from clarifai_grpc.grpc.api.status import status_code_pb2
+from clarifai.client.model import Model
 
 app = FastAPI()
 openai.api_key = os.environ.get('api_key')
+
+os.environ.get('CLARIFAI_PAT')
 
 # Configure CORS
 app.add_middleware(
@@ -32,64 +31,23 @@ class ImageInput(BaseModel):
 
 @app.post('/image_generator')
 def Image_Generator(input_data: ImageInput):
-    images = []
-    
+
     if not input_data.text:
         return "Please Enter something"
     
-     # Your PAT (Personal Access Token) can be found in the portal under Authentification
-    PAT = '7d91ea7a8cf84e54bd72e3579b6b210c'
-    # Specify the correct user_id/app_id pairings
-    # Since you're making inferences outside your app's scope
-    USER_ID = 'openai'
-    APP_ID = 'dall-e'
-    # Change these to whatever model and text URL you want to use
-    MODEL_ID = 'dall-e-3'
-    MODEL_VERSION_ID = 'dc9dcb6ee67543cebc0b9a025861b868'
-        
-    # Initialize Clarifai API
-    channel = ClarifaiChannel.get_grpc_channel()
-    stub = service_pb2_grpc.V2Stub(channel)
-    metadata = (('authorization', 'Key ' + PAT),)
-    userDataObject = resources_pb2.UserAppIDSet(user_id=USER_ID, app_id=APP_ID)
-
-    # Make request to DALL-E model
-    post_model_outputs_response = stub.PostModelOutputs(
-        service_pb2.PostModelOutputsRequest(
-            user_app_id=userDataObject,
-            model_id=MODEL_ID,
-            version_id=MODEL_VERSION_ID,
-            inputs=[
-                resources_pb2.Input(
-                    data=resources_pb2.Data(
-                        text=resources_pb2.Text(
-                            raw=input_data.text
-                        )
-                    )
-                )
-            ]
-        ),
-        metadata=metadata
-    )
-    
-    # Handle response
-    if post_model_outputs_response.status.code != status_code_pb2.SUCCESS:
-        raise Exception("Post model outputs failed, status: " + post_model_outputs_response.status.description)
-    # Append generated image base64 to images list
-    image_base64 = post_model_outputs_response.outputs[0].data.image.base64
-    
-    return {"image_base64": image_base64}
-
-        # except Exception as e:
-        #    # Check if the exception message matches the one from BingImageCreator.py
-        #    if str(e) == "Your prompt has been blocked by Bing. Try to change any bad words and try again.":
-        #        raise HTTPException(status_code=403, detail="blocked the prompt. Please revise it and try again.")
-        #    else:
-        #        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-# @app.post('/save_image')
-# def save_image():
-# save_images(links: list, output_dir: str, file_name: str = None) -> None
+    images = []
+    # Setting the inference parameters
+    inference_params = dict(quality="standard" , size= "1024x1024")
+    # Using the model Dall-e-3 to generate image
+    # Passing the prompt and inference parameters
+    for i in range(3):
+        model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(input_data.text.encode(), input_type="text",inference_params = inference_params)
+        # Storing the output
+        output = model_prediction.outputs[0].data.image.base64
+        image_data = base64.b64encode(output).decode('utf-8')
+        images.append(image_data)
+    print(len(images))
+    return images
 
 class ContentInput(BaseModel):
     text: str
