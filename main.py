@@ -135,6 +135,3 @@ async def Content_Generator(file: UploadFile = File(...)):
      text = pytesseract.image_to_string(img,lang='eng')
      print(text)
      return text
-
-if __name__ == "__main__":
-    uvicorn.run('main:app',host='localhost',port=8000)
