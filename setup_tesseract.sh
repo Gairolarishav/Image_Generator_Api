@@ -1,8 +1,5 @@
 #!/bin/bash
-
-# Download and extract Tesseract OCR binaries
-wget https://github.com/tesseract-ocr/tesseract/releases/download/v5.0.0/tesseract-5.0.0-linux-amd64.tar.xz
-tar xf tesseract-5.0.0-linux-amd64.tar.xz
+tar xf /5.3.4.tar.gz
 
 # Move Tesseract binaries to a location in the system PATH
 sudo mv tesseract-5.0.0-linux-amd64/tesseract /usr/local/bin/
