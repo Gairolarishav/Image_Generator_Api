@@ -132,7 +132,7 @@ async def Content_Generator(file: UploadFile = File(...)):
      # plt.imshow(img,cmap='gray')
      # plt.show()
      # # custom_config = r'-l eng+hin --psm 6'
-     text = pytesseract.image_to_string(img,lang='hin+eng')
+     text = pytesseract.image_to_string(img,lang='eng')
      print(text)
      return text
 
