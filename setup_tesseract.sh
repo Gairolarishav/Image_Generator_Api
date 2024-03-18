@@ -10,3 +10,5 @@ sudo mv tesseract-5.0.0-linux-amd64/tesseract.1 /usr/local/share/man/man1/
 
 # Verify installation
 tesseract --version
+
+pip install -r requirements.txt
