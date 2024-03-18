@@ -12,6 +12,7 @@ import pytesseract
 from clarifai.client.model import Model
 
 app = FastAPI()
+os.environ['api_key'] = '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'
 openai.api_key = os.environ.get('api_key')
 
 os.environ.get('CLARIFAI_PAT')
@@ -62,6 +63,8 @@ def Image_Generator(input_data: ImageInput):
         stop = stop[1] 
         # badreq = badreq[2:stop]
         return stop[0:-1]       
+
+
 
 class ContentInput(BaseModel):
     text: str
