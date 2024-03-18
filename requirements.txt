@@ -22,4 +22,3 @@ Opencv-python
 pytesseract
 clarifai
 python-multipart
-tesseract-ocr
