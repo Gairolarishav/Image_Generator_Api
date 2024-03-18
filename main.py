@@ -12,7 +12,6 @@ import pytesseract
 from clarifai.client.model import Model
 
 app = FastAPI()
-os.environ['api_key'] = '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'
 openai.api_key = os.environ.get('api_key')
 
 os.environ.get('CLARIFAI_PAT')
