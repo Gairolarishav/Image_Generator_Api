@@ -6,10 +6,7 @@ import os
 from pydantic import BaseModel
 import requests
 import base64
-import cv2
-import numpy as np
 import json
-import matplotlib.pyplot as plt
 import requests
 from clarifai.client.model import Model
 
