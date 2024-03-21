@@ -16,7 +16,7 @@ from clarifai.client.model import Model
 app = FastAPI()
 openai.api_key = os.environ.get('api_key')
 
-os.environ['CLARIFAI_PAT'] = '7d91ea7a8cf84e54bd72e3579b6b210c'
+os.environ.get('CLARIFAI_PAT')
 
 # Configure CORS
 app.add_middleware(
