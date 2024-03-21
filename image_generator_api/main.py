@@ -8,13 +8,15 @@ import requests
 import base64
 import cv2
 import numpy as np
-import pytesseract
+import json
+import matplotlib.pyplot as plt
+import requests
 from clarifai.client.model import Model
 
 app = FastAPI()
 openai.api_key = os.environ.get('api_key')
 
-os.environ.get('CLARIFAI_PAT')
+os.environ['CLARIFAI_PAT'] = '7d91ea7a8cf84e54bd72e3579b6b210c'
 
 # Configure CORS
 app.add_middleware(
@@ -39,10 +41,12 @@ def Image_Generator(input_data: ImageInput):
        images = []
        # Setting the inference parameters
        inference_params = dict(quality="standard" , size= "1024x1024")
+
        # Using the model Dall-e-3 to generate image
        # Passing the prompt and inference parameters
        for i in range(2):
            model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(input_data.text.encode(), input_type="text",inference_params = inference_params) 
+
         # Storing the output
            output = model_prediction.outputs[0].data.image.base64
            image_data = base64.b64encode(output).decode('utf-8')
@@ -109,29 +113,49 @@ def Content_Generator(input_data: ContentInput):
       else:
          return response.json()['error']['message']
 
-def read_file_as_image(data):
-    nparr = np.fromstring(data, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    return img
+# def read_file_as_image(data):
+#     nparr = np.fromstring(data, np.uint8)
+#     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+#     return img
 
 @app.post('/extractor')
-async def Content_Generator(file: UploadFile = File(...)):
-     img = read_file_as_image(await file.read())
-     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+async def text_extractor(file: UploadFile = File(...)):
+    try:
+        # Get the file name
+        # file_name = file.filename
+        # print("File Name:", file_name)def read_file_as_image(data):
+#     nparr = np.fromstring(data, np.uint8)
+#     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+#     return img
 
-     # ret, thresh = cv2.threshold(img, 140, 255, cv2.THRESH_BINARY)
-     # from PIL import Image, ImageEnhance
-     # import numpy as np
-     # kernel = np.ones((2, 2), np.uint8)
-     # img_erosion = cv2.erode(thresh, kernel, iterations=1)
-     # img_dilation = cv2.dilate(img_erosion, kernel, iterations=1)
-     # # Creating object of Brightness class
-     # img1 = Image.fromarray(img_dilation)
-     # im3 = ImageEnhance.Brightness(img1)
-     # im3 = im3.enhance(1)
-     # plt.imshow(img,cmap='gray')
-     # plt.show()
-     # # custom_config = r'-l eng+hin --psm 6'
-     text = pytesseract.image_to_string(img,lang='eng')
-     print(text)
-     return text
+        # img = read_file_as_image(await file.read())
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # print(img)
+
+        # ret, thresh = cv2.threshold(img, 140, 255, cv2.THRESH_BINARY)
+        # kernel = np.ones((2, 2), np.uint8)
+        # img_erosion = cv2.erode(thresh, kernel, iterations=1)
+        # img_dilation = cv2.dilate(img_erosion, kernel, iterations=1)
+        # img1 = Image.fromarray(img_dilation)
+        # im3 = ImageEnhance.Brightness(img1)
+        # im3 = im3.enhance(1)
+        headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOWY2ODVjZjQtNjcyZS00ZTVkLTk2N2YtZmVkYTIwYjBhNTQ3IiwidHlwZSI6ImFwaV90b2tlbiJ9.CKdmWLOx1AqzqeX_cL6WGCP8C5nRscR9sTf2dgXCbbc"}
+
+        url = "https://api.edenai.run/v2/ocr/ocr"
+        data = {
+            "providers": "google",
+            "language": "en",
+            "fallback_providers": ""
+        }
+        files = {"file": (file.filename, file.file, file.content_type)}
+
+        response = requests.post(url, data=data, files=files, headers=headers)
+        result = json.loads(response.text)
+        print(result)
+        return result["google"]["text"]
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return str(e)
+
+if __name__ == "__main__":
+    uvicorn.run('main:app',host='localhost',port=8000)
