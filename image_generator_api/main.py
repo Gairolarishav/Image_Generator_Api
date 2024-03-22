@@ -13,24 +13,21 @@ from clarifai.client.model import Model
 app = FastAPI()
 openai.api_key = os.environ.get('api_key')
 
-os.environ.get('CLARIFAI_PAT')
-
-# Configure CORS
+# CORS (Cross-Origin Resource Sharing) configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Add your frontend URL here
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
 
-class ImageInput(BaseModel):
+class DalleInput(BaseModel):
     text: str
 
-@app.post('/image_generator')
-def Image_Generator(input_data: ImageInput):
-
+@app.post('/dalle_generator')
+def Dalle_Generator(input_data: DalleInput):
     if not input_data.text:
         return "Please Enter something"
     
@@ -62,7 +59,65 @@ def Image_Generator(input_data: ImageInput):
         stop =  badreq.split("'")
         stop = stop[1] 
         # badreq = badreq[2:stop]
-        return stop[0:-1]       
+        return stop[0:-1]  
+
+class StableInput(BaseModel):
+    text: str
+    style: str
+
+@app.post('/stable_generator')
+def Stable_Generator(input_data: StableInput):
+   engine_id = "stable-diffusion-v1-6"
+   api_host = 'https://api.stability.ai'
+   api_key = os.getenv("STABILITY_API_KEY")
+
+   text = input_data.text
+   style = input_data.style
+   images = []
+
+   if not input_data.text:
+      return "Please Enter something"
+   
+   elif (api_key is None):   
+      return("Missing Stability API key.")
+   
+   else:
+      response = requests.post(   
+          f"{api_host}/v1/generation/{engine_id}/text-to-image",
+          headers={
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": f"Bearer {api_key}"
+          },
+          json={
+          "text_prompts": [
+              {
+                  "text": text
+              }
+          ],
+          "cfg_scale": 7,
+          "height": 512,
+          "width": 512,
+          "samples": 2,
+          "steps": 30,
+          "style_preset" : style
+          },
+      )
+
+      if response.status_code != 200:
+         error =  response.json()
+         error = error['message']
+         return error
+         
+         
+        #  return result
+
+      data = response.json()
+      for i, image in enumerate(data["artifacts"]):
+         image = image["base64"]
+         image = images.append(image)
+      return images
+
 
 
 
