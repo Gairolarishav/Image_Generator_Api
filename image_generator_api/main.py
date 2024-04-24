@@ -209,5 +209,26 @@ async def text_extractor(file: UploadFile = File(...)):
         print(f"An error occurred: {e}")
         return str(e)
 
+class Entry(BaseModel):
+    folder_id: int
+    duplicate_id: int
+
+@app.post("api/forms/entries/duplicate/{entryy_id}")
+async def duplicate_entry(entryy_id: int, entry: Entry):
+
+    folder_id = entry.folder_id
+    duplicate_id = entry.duplicate_id
+
+    if folder_id and duplicate_id: 
+        folder = entry.folder_id
+        
+             
+        return Response({'status': 'Entry Duplicated successfully inside a folder', 'new_entry':1}) 
+    else:
+        pass 
+    
+    
+    return Response({'status': 'Entry Duplicated successfully', 'new_entry':2})
+
 if __name__ == "__main__":
     uvicorn.run('main:app',host='localhost',port=8000)
