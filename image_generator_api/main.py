@@ -213,7 +213,7 @@ class Entry(BaseModel):
     folder_id: int
     duplicate_id: int
 
-@app.post("api/forms/entries/duplicate/{entryy_id}")
+@app.post("/api/forms/entries/duplicate/{entryy_id}")
 async def duplicate_entry(entryy_id: int, entry: Entry):
 
     folder_id = entry.folder_id
