@@ -5,6 +5,9 @@ import openai
 import os
 from pydantic import BaseModel
 import requests
+from clarifai_grpc.channel.clarifai_channel import ClarifaiChannel
+from clarifai_grpc.grpc.api import resources_pb2, service_pb2, service_pb2_grpc
+from clarifai_grpc.grpc.api.status import status_code_pb2
 
 app = FastAPI()
 openai.api_key = os.environ.get('api_key')
@@ -50,48 +53,99 @@ def Image_Generator(input_data: ImageInput):
     
 
 
+# class ContentInput(BaseModel):
+#     text: str
+
+# @app.post('/content_generator')
+# def Content_Generator(input_data: ContentInput):
+#     URL = "https://api.openai.com/v1/chat/completions"
+
+#     messages = [
+#         {'role': 'system', 'content': 'You are a kind helpful assistant'}
+#     ]
+
+#     while True:
+#       user_input = input_data.text
+#       if user_input:
+#         # Append the user input to the messages list
+#         messages.append({'role': 'user', 'content': user_input})
+
+#         payload = {
+#           "model": "gpt-3.5-turbo",
+#           "messages": messages,
+#           "temperature": 1.0,
+#           'top_p': 1.0,
+#           'n': 1,
+#           'stream': False,
+#           "presence_penalty": 0,
+#           "frequency_penalty": 0,
+#         }
+#         headers = {
+#         'Content-Type': "application/json",
+#         'Authorization': f"Bearer {openai.api_key}"
+#         }
+#         response = requests.post(URL, headers=headers, json=payload)
+#       else:
+#          return "Please Enter something"
+
+#       if response.status_code == 200:
+#         reply = response.json()['choices'][0]['message']['content']
+#         reply = reply.replace('\n','<br>')
+#         messages.append({"role": "assistant", "content": reply})
+#         return reply
+#       else:
+#          return response.json()['error']['message']
+
 class ContentInput(BaseModel):
     text: str
 
+PAT = '5e9f346a37a7460485dc8c549fc7fd4d'
+USER_ID = 'openai'
+APP_ID = 'chat-completion'
+MODEL_ID = 'GPT-3_5-turbo'
+MODEL_VERSION_ID = '4c0aec1853c24b4c83df8ba250f3b984'
+
+channel = ClarifaiChannel.get_grpc_channel()
+stub = service_pb2_grpc.V2Stub(channel)
+
+metadata = (('authorization', 'Key ' + PAT),)
+
+userDataObject = resources_pb2.UserAppIDSet(user_id=USER_ID, app_id=APP_ID)
+
 @app.post('/content_generator')
 def Content_Generator(input_data: ContentInput):
-    URL = "https://api.openai.com/v1/chat/completions"
+    if not input_data.text:
+        return {"error": "Please Enter something"}
+    
+    try:
+        post_model_outputs_response = stub.PostModelOutputs(
+            service_pb2.PostModelOutputsRequest(
+                user_app_id=userDataObject,
+                model_id=MODEL_ID,
+                version_id=MODEL_VERSION_ID,
+                inputs=[
+                    resources_pb2.Input(
+                        data=resources_pb2.Data(
+                            text=resources_pb2.Text(
+                                raw=input_data.text
+                            )
+                        )
+                    )
+                ]
+            ),
+            metadata=metadata
+        )
 
-    messages = [
-        {'role': 'system', 'content': 'You are a kind helpful assistant'}
-    ]
+        if post_model_outputs_response.status.code != status_code_pb2.SUCCESS:
+            raise Exception(f"Post model outputs failed, status: {post_model_outputs_response.status.description}")
 
-    while True:
-      user_input = input_data.text
-      if user_input:
-        # Append the user input to the messages list
-        messages.append({'role': 'user', 'content': user_input})
+        output = post_model_outputs_response.outputs[0]
+        reply = output.data.text.raw.replace('\n', '<br>')
 
-        payload = {
-          "model": "gpt-3.5-turbo",
-          "messages": messages,
-          "temperature": 1.0,
-          'top_p': 1.0,
-          'n': 1,
-          'stream': False,
-          "presence_penalty": 0,
-          "frequency_penalty": 0,
-        }
-        headers = {
-        'Content-Type': "application/json",
-        'Authorization': f"Bearer {openai.api_key}"
-        }
-        response = requests.post(URL, headers=headers, json=payload)
-      else:
-         return "Please Enter something"
-
-      if response.status_code == 200:
-        reply = response.json()['choices'][0]['message']['content']
-        reply = reply.replace('\n','<br>')
-        messages.append({"role": "assistant", "content": reply})
-        return reply
-      else:
-         return response.json()['error']['message']
+        return {"reply": reply}
+    
+    except Exception as e:
+        return {"error": str(e)}
 
 
 
