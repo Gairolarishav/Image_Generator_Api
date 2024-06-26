@@ -219,7 +219,7 @@ def Content_Generator(input_data: ContentInput):
         reply = output.data.text.raw.replace('\n', '<br>')
         print(reply)
 
-        return {"reply": reply}
+        return reply
     
     except Exception as exc:
         # Extracting the message from the exception
