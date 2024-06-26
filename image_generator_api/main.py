@@ -217,6 +217,7 @@ def Content_Generator(input_data: ContentInput):
 
         output = post_model_outputs_response.outputs[0]
         reply = output.data.text.raw.replace('\n', '<br>')
+        print(reply)
 
         return {"reply": reply}
     
