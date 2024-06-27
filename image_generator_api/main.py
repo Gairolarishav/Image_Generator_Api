@@ -169,11 +169,11 @@ class ContentInput(BaseModel):
 #          return response.json()['error']['message']
 
 # Clarifai API setup
-PAT = os.environ.get('CLARIFAI_PAT')
+PAT = "7d91ea7a8cf84e54bd72e3579b6b210c"
 USER_ID = 'openai'
 APP_ID = 'chat-completion'
-MODEL_ID = 'GPT-3_5-turbo'
-MODEL_VERSION_ID = '4c0aec1853c24b4c83df8ba250f3b984'
+MODEL_ID = 'gpt-4o'
+MODEL_VERSION_ID = '1cd39c6a109f4f0e94f1ac3fe233c207'
 
 channel = ClarifaiChannel.get_grpc_channel()
 stub = service_pb2_grpc.V2Stub(channel)
@@ -182,17 +182,18 @@ metadata = (('authorization', 'Key ' + PAT),)
 
 userDataObject = resources_pb2.UserAppIDSet(user_id=USER_ID, app_id=APP_ID)
 
+# Initialize an empty list to store the conversation history
+conversation_history = [{'role': 'system', 'content': 'You are a kind helpful assistant'}]
+
 @app.post('/content_generator')
 def Content_Generator(input_data: ContentInput):
+    print("input_data.text :", input_data.text)
     if not input_data.text:
         return {"error": "Please Enter something"}
 
     try:
-        # Setting up the messages with the initial system message
-        messages = [
-            {'role': 'system', 'content': 'You are a kind helpful assistant'},
-            {'role': 'user', 'content': input_data.text}
-        ]
+        # Append the new user message to the conversation history
+        conversation_history.append({'role': 'user', 'content': input_data.text})
 
         post_model_outputs_response = stub.PostModelOutputs(
             service_pb2.PostModelOutputsRequest(
@@ -203,7 +204,7 @@ def Content_Generator(input_data: ContentInput):
                     resources_pb2.Input(
                         data=resources_pb2.Data(
                             text=resources_pb2.Text(
-                                raw=json.dumps(messages)
+                                raw=json.dumps(conversation_history)
                             )
                         )
                     )
@@ -217,22 +218,20 @@ def Content_Generator(input_data: ContentInput):
 
         output = post_model_outputs_response.outputs[0]
         reply = output.data.text.raw.replace('\n', '<br>')
-        print(reply)
+
+        # Append the assistant's reply to the conversation history
+        conversation_history.append({'role': 'assistant', 'content': reply})
 
         return reply
     
     except Exception as exc:
-        # Extracting the message from the exception
         error = str(exc)
-        details = error.find('details')
-        details = error[details:]
-        badreq = details.find("BadRequestError-Error code:")
-        badreq = details[badreq:]
-        badreq = badreq.split(':')
-        badreq = badreq[4]
-        stop = badreq.split("'")
-        stop = stop[1]
-        return {"error": stop[0:-1]}
+        if "404" in error:
+            return "Resource not found. Please check your Model ID and Version ID."
+        elif "403" in error:
+            return "Access forbidden. Please check your API key permissions."
+        else:
+            return "An unexpected error occurred: " + error
         
 # def read_file_as_image(data):
 #     nparr = np.fromstring(data, np.uint8)
