@@ -43,28 +43,32 @@ def dalle_generator(input_data: DalleInput):
         raise HTTPException(status_code=400, detail="Please enter a prompt")
     
     try:
+        images = []
         # Setting the inference parameters
         inference_params = dict(quality="standard", size="1024x1024")
         
         # Construct the prompt based on conversation history
         full_prompt = construct_prompt(input_data.text)
+
+        for i in range(2):
+            # Using the model Dall-e-3 to generate image
+            model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(
+               full_prompt.encode(), 
+               input_type="text",
+               inference_params=inference_params
+            )
         
-        # Using the model Dall-e-3 to generate image
-        model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(
-            full_prompt.encode(), 
-            input_type="text",
-            inference_params=inference_params
-        )
+            # Storing the output
+            output = model_prediction.outputs[0].data.image.base64
+            image_data = base64.b64encode(output).decode('utf-8')
+
+            images.append(image_data)
         
-        # Storing the output
-        output = model_prediction.outputs[0].data.image.base64
-        image_data = base64.b64encode(output).decode('utf-8')
+            # Update conversation state
+            conversation_state.current_image = image_data
+            conversation_state.conversation_history.append(input_data.text)
         
-        # Update conversation state
-        conversation_state.current_image = image_data
-        conversation_state.conversation_history.append(input_data.text)
-        
-        return image_data
+        return images
     
     except Exception as exc:
         # Error handling (similar to your original code)
