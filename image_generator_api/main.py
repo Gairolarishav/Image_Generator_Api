@@ -63,6 +63,7 @@ def dalle_generator(input_data: DalleInput):
             image_data = base64.b64encode(output).decode('utf-8')
 
             images.append(image_data)
+            print(images)
         
             # Update conversation state
             conversation_state.current_image = image_data
