@@ -72,6 +72,19 @@ def dalle_generator(input_data: DalleInput):
         # ... (rest of your error handling code)
         return stop[0:-1]
 
+def construct_prompt(new_input: str) -> str:
+    if not conversation_state.conversation_history:
+        return new_input
+    else:
+        previous_prompt = conversation_state.conversation_history[-1]
+        return f"Based on the previous image of '{previous_prompt}', {new_input}"
+
+@app.get('/reset_conversation')
+def reset_conversation():
+    conversation_state.current_image = None
+    conversation_state.conversation_history = []
+    return {"message": "Conversation reset successfully"}
+
 # class DalleInput(BaseModel):
 #     text: str
 
