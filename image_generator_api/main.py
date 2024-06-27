@@ -8,6 +8,7 @@ import requests
 import base64
 import json
 import requests
+from typing import List, Dict, Optional
 from clarifai.client.model import Model
 from clarifai_grpc.channel.clarifai_channel import ClarifaiChannel
 from clarifai_grpc.grpc.api import resources_pb2, service_pb2, service_pb2_grpc
