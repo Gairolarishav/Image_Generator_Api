@@ -25,44 +25,89 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 class DalleInput(BaseModel):
     text: str
+    previous_image: Optional[str] = None
+
+class ConversationState:
+    def __init__(self):
+        self.current_image = None
+        self.conversation_history = []
+
+conversation_state = ConversationState()
 
 @app.post('/dalle_generator')
-def Dalle_Generator(input_data: DalleInput):
+def dalle_generator(input_data: DalleInput):
     if not input_data.text:
-        return "Please Enter something"
+        raise HTTPException(status_code=400, detail="Please enter a prompt")
     
     try:
-       images = []
-       # Setting the inference parameters
-       inference_params = dict(quality="standard" , size= "1024x1024")
-
-       # Using the model Dall-e-3 to generate image
-       # Passing the prompt and inference parameters
-       for i in range(2):
-           model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(input_data.text.encode(), input_type="text",inference_params = inference_params) 
-
+        # Setting the inference parameters
+        inference_params = dict(quality="standard", size="1024x1024")
+        
+        # Construct the prompt based on conversation history
+        full_prompt = construct_prompt(input_data.text)
+        
+        # Using the model Dall-e-3 to generate image
+        model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(
+            full_prompt.encode(), 
+            input_type="text",
+            inference_params=inference_params
+        )
+        
         # Storing the output
-           output = model_prediction.outputs[0].data.image.base64
-           image_data = base64.b64encode(output).decode('utf-8')
-           images.append(image_data)
-       print(len(images))
-       return images
+        output = model_prediction.outputs[0].data.image.base64
+        image_data = base64.b64encode(output).decode('utf-8')
+        
+        # Update conversation state
+        conversation_state.current_image = image_data
+        conversation_state.conversation_history.append(input_data.text)
+        
+        return image_data
+    
     except Exception as exc:
-         # Extracting the message from the exception
+        # Error handling (similar to your original code)
         error = str(exc)
-        details = error.find('details')
-        details = error[details:]
-        badreq = details.find("BadRequestError-Error code:")
-        badreq = details[badreq:]
-        badreq = badreq.split(':')
-        badreq = badreq[4]
-        stop =  badreq.split("'")
-        stop = stop[1] 
-        # badreq = badreq[2:stop]
-        return stop[0:-1]  
+        # ... (rest of your error handling code)
+        return stop[0:-1]
+
+# class DalleInput(BaseModel):
+#     text: str
+
+# @app.post('/dalle_generator')
+# def Dalle_Generator(input_data: DalleInput):
+#     if not input_data.text:
+#         return "Please Enter something"
+    
+#     try:
+#        images = []
+#        # Setting the inference parameters
+#        inference_params = dict(quality="standard" , size= "1024x1024")
+
+#        # Using the model Dall-e-3 to generate image
+#        # Passing the prompt and inference parameters
+#        for i in range(2):
+#            model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(input_data.text.encode(), input_type="text",inference_params = inference_params) 
+
+#         # Storing the output
+#            output = model_prediction.outputs[0].data.image.base64
+#            image_data = base64.b64encode(output).decode('utf-8')
+#            images.append(image_data)
+#        print(len(images))
+#        return images
+#     except Exception as exc:
+#          # Extracting the message from the exception
+#         error = str(exc)
+#         details = error.find('details')
+#         details = error[details:]
+#         badreq = details.find("BadRequestError-Error code:")
+#         badreq = details[badreq:]
+#         badreq = badreq.split(':')
+#         badreq = badreq[4]
+#         stop =  badreq.split("'")
+#         stop = stop[1] 
+#         # badreq = badreq[2:stop]
+#         return stop[0:-1]  
 
 class StableInput(BaseModel):
     text: str
