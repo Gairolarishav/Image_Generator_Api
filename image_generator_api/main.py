@@ -233,7 +233,7 @@ class ContentInput(BaseModel):
 #          return response.json()['error']['message']
 
 # Clarifai API setup
-PAT = "7d91ea7a8cf84e54bd72e3579b6b210c"
+PAT = os.getenv("CLARIFAI_PAT")
 USER_ID = 'openai'
 APP_ID = 'chat-completion'
 MODEL_ID = 'GPT-4'
