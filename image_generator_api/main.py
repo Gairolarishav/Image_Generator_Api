@@ -236,8 +236,8 @@ class ContentInput(BaseModel):
 PAT = "7d91ea7a8cf84e54bd72e3579b6b210c"
 USER_ID = 'openai'
 APP_ID = 'chat-completion'
-MODEL_ID = 'gpt-4o'
-MODEL_VERSION_ID = '1cd39c6a109f4f0e94f1ac3fe233c207'
+MODEL_ID = 'GPT-4'
+MODEL_VERSION_ID = '6c58be10ca3441bca2e9a956d28a47ce'
 
 channel = ClarifaiChannel.get_grpc_channel()
 stub = service_pb2_grpc.V2Stub(channel)
